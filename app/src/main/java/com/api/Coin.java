@@ -1,4 +1,4 @@
-package com.example.vendingmachine.api;
+package com.vendingmachine.api;
 
 public enum Coin {
     NICKEL,

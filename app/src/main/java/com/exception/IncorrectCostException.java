@@ -1,4 +1,4 @@
-package com.example.vendingmachine.exception;
+package com.vendingmachine.exception;
 
 public class IncorrectCostException extends Exception
 {
