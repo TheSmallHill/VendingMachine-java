@@ -1,8 +1,15 @@
 package com.vendingmachine;
 
 // Import all classes in the package
-import com.vendingmachine.api.*;
-import com.vendingmachine.exception.*;
+import com.vendingmachine.api.VendingMachine;
+import com.vendingmachine.api.VendingSlot;
+import com.vendingmachine.api.ItemImpl;
+import com.vendingmachine.api.Coin;
+
+import com.vendingmachine.exception.IncorrectCostException;
+import com.vendingmachine.exception.InsufficientFundsException;
+import com.vendingmachine.exception.ItemNotAvailableException;
+import com.vendingmachine.exception.VendingSlotNotFoundException;
 
 // Java imports
 import java.util.List;
@@ -57,10 +64,8 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
       // This can throw if the slot doesn't exist. An invalid slot code just returns null.
       VendingSlot<ItemImpl> slot = getSlot(vendingSlotCode);
                   
-      if (item.getCost() != slot.getCost())
-      {
-         throw new IncorrectCostException();
-      }
+      // This can throw if the item cost doesn't match the slot cost.
+      slot.loadItem(item);
    }
    
    @Override
@@ -73,7 +78,21 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
    public ItemImpl vendItem(String vendingSlotCode)
       throws InsufficientFundsException, ItemNotAvailableException, VendingSlotNotFoundException
    {
-      ItemImpl returnItem = new ItemImpl("Placeholder", 42);
+      // Able to throw if there is no slot. Returns null if the vending slot code isn't valid.
+      VendingSlot<ItemImpl> slot = getSlot(vendingSlotCode);
+      
+      // Make sure they have enough change loaded to pay for their item.
+      final int loadedCents = getLoadedCents();
+      final int slotCost = slot.getCost();
+      if (loadedCents < slotCost)
+      {
+         throw new InsufficientFundsException();
+      }
+      
+      ItemImpl returnItem = slot.dispenseItem();
+      
+      changeDueCents_ = loadedCents - slot.getCost();
+      insertedCoins_.clear(); // Transaction "processed" so clear out was loaded so we are ready to dispense change.
       
       return returnItem;
    }
@@ -81,7 +100,28 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
    @Override
    public List<Coin> returnChange()
    {
-      List<Coin> returnChange = new ArrayList<Coin>();
+      ArrayList<Coin> returnChange = new ArrayList<Coin>();
+      
+      // Give back as many quarters as we can
+      while (changeDueCents_ - 25 >= 0)
+      {
+         returnChange.add(Coin.QUARTER);
+         changeDueCents_ -= 25;
+      }
+         
+      // Give back as many dimes as we can
+      while (changeDueCents_ - 10 >= 0)
+      {
+         returnChange.add(Coin.DIME);
+         changeDueCents_ -= 10;
+      }
+      
+      // Give back as many nickels as we can
+      while (changeDueCents_ - 5 >= 0)
+      {
+         returnChange.add(Coin.NICKEL);
+         changeDueCents_ -= 5;
+      }
       
       return returnChange;
    }
@@ -110,6 +150,32 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
       
       // Return the slot that was found, if any
       return returnSlot;
+   }
+   
+   private int getLoadedCents()
+   {
+      // Quickly just sum up the coins and return the value
+      int totalCents = 0;
+      for (Coin coin : insertedCoins_)
+      {
+         switch (coin)
+         {
+            case NICKEL:
+               totalCents += 5;
+               break;
+            case DIME:
+               totalCents += 10;
+               break;
+            case QUARTER:
+               totalCents += 25;
+               break;
+            default:
+               // Some coin that we don't handle so just ignore it. All known cases are handled but throwing
+               // an exception here might be a good idea anyway.
+         }
+      }
+      
+      return totalCents;
    }
    
    private void ValidateItemPrice(int price)
