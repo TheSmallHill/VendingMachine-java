@@ -63,9 +63,12 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
    {
       // This can throw if the slot doesn't exist. An invalid slot code just returns null.
       VendingSlot<ItemImpl> slot = getSlot(vendingSlotCode);
-                  
-      // This can throw if the item cost doesn't match the slot cost.
-      slot.loadItem(item);
+               
+      if (slot != null)
+      {   
+         // This can throw if the item cost doesn't match the slot cost.
+         slot.loadItem(item);
+      }
    }
    
    @Override

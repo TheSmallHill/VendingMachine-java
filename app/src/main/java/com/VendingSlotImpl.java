@@ -14,12 +14,14 @@ public class VendingSlotImpl implements VendingSlot<ItemImpl>
    final String code_;
    final int cost_;
 
-   Stack<ItemImpl> contents_; // Initializes as empty
+   Stack<ItemImpl> contents_;
 
    public VendingSlotImpl(String code, int cost)
    {
       code_ = code;
       cost_ = cost;
+      
+      contents_ = new Stack<ItemImpl>();
    }
    
    @Override
@@ -38,7 +40,7 @@ public class VendingSlotImpl implements VendingSlot<ItemImpl>
    public void loadItem(ItemImpl item)
       throws IncorrectCostException
    {
-      if (item.getCost() != cost_)
+      if (item.getCost() != getCost())
       {
          throw new IncorrectCostException();
       }
