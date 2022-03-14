@@ -1,7 +1,7 @@
 package com.vendingmachine;
 
 import com.vendingmachine.api.VendingSlot;
-import com.vendingmachine.api.ItemImpl;
+import com.vendingmachine.api.Item;
 
 import com.vendingmachine.exception.IncorrectCostException;
 import com.vendingmachine.exception.ItemNotAvailableException;
@@ -9,19 +9,19 @@ import com.vendingmachine.exception.ItemNotAvailableException;
 import java.util.List;
 import java.util.Stack;
 
-public class VendingSlotImpl implements VendingSlot<ItemImpl>
+public class VendingSlotImpl implements VendingSlot
 {
    final String code_;
    final int cost_;
 
-   Stack<ItemImpl> contents_;
+   Stack<Item> contents_;
 
    public VendingSlotImpl(String code, int cost)
    {
       code_ = code;
       cost_ = cost;
       
-      contents_ = new Stack<ItemImpl>();
+      contents_ = new Stack<Item>();
    }
    
    @Override
@@ -37,10 +37,10 @@ public class VendingSlotImpl implements VendingSlot<ItemImpl>
    }
    
    @Override
-   public void loadItem(ItemImpl item)
+   public void loadItem(Item item)
       throws IncorrectCostException
    {
-      if (item.getCost() != getCost())
+      if (item.getCost() != cost_)
       {
          throw new IncorrectCostException();
       }
@@ -49,7 +49,7 @@ public class VendingSlotImpl implements VendingSlot<ItemImpl>
    }
    
    @Override
-   public ItemImpl dispenseItem()
+   public Item dispenseItem()
       throws ItemNotAvailableException
    {
       if (contents_.empty())
@@ -62,7 +62,7 @@ public class VendingSlotImpl implements VendingSlot<ItemImpl>
    }
    
    @Override
-   public Stack<ItemImpl> getItems()
+   public Stack<Item> getItems()
    {
       return contents_;
    }
