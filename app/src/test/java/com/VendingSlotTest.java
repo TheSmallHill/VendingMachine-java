@@ -9,6 +9,7 @@ import com.vendingmachine.exception.IncorrectCostException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -31,6 +32,13 @@ public class VendingSlotTest
       
       // Create and load an item
       Item item = new ItemImpl("Famous Amos", 45);
-      UUT.loadItem(item);
+      try
+      {
+         UUT.loadItem(item);
+      }
+      catch(IncorrectCostException e)
+      {
+         fail("Should not have thrown any exception");
+      }
    }
 }
