@@ -9,7 +9,7 @@ import com.vendingmachine.exception.ItemNotAvailableException;
 import java.util.List;
 import java.util.Stack;
 
-public class VendingSlotImpl implements VendingSlot
+public class VendingSlotImpl implements VendingSlot<Item>
 {
    final String code_;
    final int cost_;
@@ -37,13 +37,13 @@ public class VendingSlotImpl implements VendingSlot
    }
    
    @Override
-   public void loadItem(Item item)
-      throws IncorrectCostException
+   public void loadItem(Item item) throws IncorrectCostException
    {
-      if (item.getCost() != cost_)
-      {
-         throw new IncorrectCostException();
-      }
+      final int cost = item.getCost();
+      //if (item.getCost() != cost_)
+      //{
+      //   throw new IncorrectCostException();
+      //}
       
       contents_.push(item);
    }
