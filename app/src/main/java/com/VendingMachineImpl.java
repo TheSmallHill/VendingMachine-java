@@ -3,7 +3,7 @@ package com.vendingmachine;
 // Import all classes in the package
 import com.vendingmachine.api.VendingMachine;
 import com.vendingmachine.api.VendingSlot;
-import com.vendingmachine.api.ItemImpl;
+import com.vendingmachine.api.Item;
 import com.vendingmachine.api.Coin;
 
 import com.vendingmachine.exception.IncorrectCostException;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.io.*;
 
 // React imports
 import io.reactivex.rxjava3.core.Observable;
@@ -35,13 +36,13 @@ public class VendingMachineImpl implements VendingMachine<Item>
       slots_.clear();
    
       // Setup new slots
-      for (VendingSlot<ItemImpl> slot : vendingSlots)
+      for (VendingSlot<Item> slot : vendingSlots)
       {
          // If there were other things to validate other than the code, we would do it here and AND all the
          // validation statuses together.
          
          final String code = slot.getCode();
-         if (ValidateSlotCode(code))
+         if (validateSlotCode(code))
          {
             slots_.put(code, slot);
          }
@@ -52,10 +53,13 @@ public class VendingMachineImpl implements VendingMachine<Item>
    public void loadMachineWithItem(Item item, String vendingSlotCode)
       throws VendingSlotNotFoundException, IncorrectCostException
    {
+      validateItemPrice(item.getCost());
+   
       // This can throw if the slot doesn't exist. An invalid slot code just returns null.
-      VendingSlot<Item> slot = getSlot(vendingSlotCode);
-               
-      if (slot != null)
+      VendingSlot<Item> slot = getSlot(vendingSlotCode);    
+             
+      // Can only get past this conditional by supplying a slot code of the correct format and the item is real.
+      if ((slot != null) && (item != null))
       {   
          // This can throw if the item cost doesn't match the slot cost.
          slot.loadItem(item);
@@ -69,24 +73,28 @@ public class VendingMachineImpl implements VendingMachine<Item>
    }
       
    @Override
-   public ItemImpl vendItem(String vendingSlotCode)
+   public Item vendItem(String vendingSlotCode)
       throws InsufficientFundsException, ItemNotAvailableException, VendingSlotNotFoundException
    {
       // Able to throw if there is no slot. Returns null if the vending slot code isn't valid.
       VendingSlot<Item> slot = getSlot(vendingSlotCode);
       
-      // Make sure they have enough change loaded to pay for their item.
-      final int loadedCents = getLoadedCents();
-      final int slotCost = slot.getCost();
-      if (loadedCents < slotCost)
+      Item returnItem = null;
+      if (slot != null)
       {
-         throw new InsufficientFundsException();
+         // Make sure they have enough change loaded to pay for their item.
+         final int loadedCents = getLoadedCents();
+         final int slotCost = slot.getCost();
+         if (loadedCents < slotCost)
+         {
+            throw new InsufficientFundsException();
+         }
+         
+         returnItem = slot.dispenseItem();
+         
+         changeDueCents_ = loadedCents - slot.getCost();
+         insertedCoins_.clear(); // Transaction "processed" so clear out was loaded so we are ready to dispense change.
       }
-      
-      ItemImpl returnItem = slot.dispenseItem();
-      
-      changeDueCents_ = loadedCents - slot.getCost();
-      insertedCoins_.clear(); // Transaction "processed" so clear out was loaded so we are ready to dispense change.
       
       return returnItem;
    }
@@ -127,11 +135,11 @@ public class VendingMachineImpl implements VendingMachine<Item>
       return observableCoins;
    }
    
-   private VendingSlot<ItemImpl> getSlot(String slotCode)
+   private VendingSlot<Item> getSlot(String slotCode)
       throws VendingSlotNotFoundException
    {
       VendingSlot<Item> returnSlot = null;
-      if (ValidateSlotCode(slotCode))
+      if (validateSlotCode(slotCode))
       {
          returnSlot = slots_.get(slotCode);        
       
@@ -172,7 +180,7 @@ public class VendingMachineImpl implements VendingMachine<Item>
       return totalCents;
    }
    
-   private void ValidateItemPrice(int price)
+   private void validateItemPrice(int price)
       throws IncorrectCostException
    {
       if (price <= 0)
@@ -181,7 +189,7 @@ public class VendingMachineImpl implements VendingMachine<Item>
       }
    }
    
-   private boolean ValidateSlotCode(String slotCode)
+   private boolean validateSlotCode(String slotCode)
    {
       // Just make sure the slot code comes in in the form we expect by checking with a simple regex.
       return Pattern.matches("([a-bA-B][0-9]+)", slotCode);

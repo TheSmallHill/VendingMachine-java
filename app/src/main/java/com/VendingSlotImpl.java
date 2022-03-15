@@ -14,14 +14,12 @@ public class VendingSlotImpl implements VendingSlot<Item>
    final String code_;
    final int cost_;
 
-   Stack<Item> contents_;
+   Stack<Item> contents_ = new Stack<Item>();;
 
    public VendingSlotImpl(String code, int cost)
    {
       code_ = code;
       cost_ = cost;
-      
-      contents_ = new Stack<Item>();
    }
    
    @Override
@@ -44,7 +42,7 @@ public class VendingSlotImpl implements VendingSlot<Item>
       {
          throw new IncorrectCostException();
       }
-      
+    
       contents_.push(item);
    }
    
