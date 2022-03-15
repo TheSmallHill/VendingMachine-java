@@ -21,24 +21,15 @@ import java.util.regex.Pattern;
 // React imports
 import io.reactivex.rxjava3.core.Observable;
 
-public class VendingMachineImpl implements VendingMachine<ItemImpl>
+public class VendingMachineImpl implements VendingMachine<Item>
 {
-   private Map<String, VendingSlot<ItemImpl>> slots_;
+   private Map<String, VendingSlot<Item>> slots_= new TreeMap<String, VendingSlot<Item>>();
 
-   private List<Coin> insertedCoins_;
-   private int changeDueCents_;
-
-   public VendingMachineImpl()
-   {
-      // Member variable initialization (there is no money in the machine and no items in any slots)
-      slots_ = new TreeMap<String, VendingSlot<ItemImpl>>();
-      insertedCoins_ = new ArrayList<Coin>();
-      
-      changeDueCents_ = 0;  
-   }
+   private List<Coin> insertedCoins_ = new ArrayList<Coin>();
+   private int changeDueCents_ = 0;
 
    @Override
-   public void configureMachineWithVendingSlots(List<VendingSlot<ItemImpl>> vendingSlots)
+   public void configureMachineWithVendingSlots(List<VendingSlot<Item>> vendingSlots)
    {
       // Configuring the machine erases all slots
       slots_.clear();
@@ -58,11 +49,11 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
    }
    
    @Override
-   public void loadMachineWithItem(ItemImpl item, String vendingSlotCode)
+   public void loadMachineWithItem(Item item, String vendingSlotCode)
       throws VendingSlotNotFoundException, IncorrectCostException
    {
       // This can throw if the slot doesn't exist. An invalid slot code just returns null.
-      VendingSlot<ItemImpl> slot = getSlot(vendingSlotCode);
+      VendingSlot<Item> slot = getSlot(vendingSlotCode);
                
       if (slot != null)
       {   
@@ -82,7 +73,7 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
       throws InsufficientFundsException, ItemNotAvailableException, VendingSlotNotFoundException
    {
       // Able to throw if there is no slot. Returns null if the vending slot code isn't valid.
-      VendingSlot<ItemImpl> slot = getSlot(vendingSlotCode);
+      VendingSlot<Item> slot = getSlot(vendingSlotCode);
       
       // Make sure they have enough change loaded to pay for their item.
       final int loadedCents = getLoadedCents();
@@ -139,7 +130,7 @@ public class VendingMachineImpl implements VendingMachine<ItemImpl>
    private VendingSlot<ItemImpl> getSlot(String slotCode)
       throws VendingSlotNotFoundException
    {
-      VendingSlot<ItemImpl> returnSlot = null;
+      VendingSlot<Item> returnSlot = null;
       if (ValidateSlotCode(slotCode))
       {
          returnSlot = slots_.get(slotCode);        
