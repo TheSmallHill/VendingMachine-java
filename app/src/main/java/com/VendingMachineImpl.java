@@ -4,6 +4,7 @@ package com.vendingmachine;
 import com.vendingmachine.api.VendingMachine;
 import com.vendingmachine.api.VendingSlot;
 import com.vendingmachine.api.Item;
+import com.vendingmachine.api.ItemImpl;
 import com.vendingmachine.api.Coin;
 
 import com.vendingmachine.exception.IncorrectCostException;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import java.io.*;
 
 // React imports
 import io.reactivex.rxjava3.core.Observable;
@@ -76,20 +76,24 @@ public class VendingMachineImpl implements VendingMachine<Item>
    public Item vendItem(String vendingSlotCode)
       throws InsufficientFundsException, ItemNotAvailableException, VendingSlotNotFoundException
    {
+      Item returnItem = null;
+
       // Able to throw if there is no slot. Returns null if the vending slot code isn't valid.
       VendingSlot<Item> slot = getSlot(vendingSlotCode);
       
-      Item returnItem = null;
       if (slot != null)
       {
          // Make sure they have enough change loaded to pay for their item.
-         final int loadedCents = getLoadedCents();
-         final int slotCost = slot.getCost();
+         int loadedCents = getLoadedCents();
+         int slotCost = slot.getCost();
+         
+         // Throw if we have insufficient funds
          if (loadedCents < slotCost)
          {
             throw new InsufficientFundsException();
          }
          
+         // Can throw if there are no items remaining
          returnItem = slot.dispenseItem();
          
          changeDueCents_ = loadedCents - slot.getCost();
@@ -171,9 +175,6 @@ public class VendingMachineImpl implements VendingMachine<Item>
             case QUARTER:
                totalCents += 25;
                break;
-            default:
-               // Some coin that we don't handle so just ignore it. All known cases are handled but throwing
-               // an exception here might be a good idea anyway.
          }
       }
       

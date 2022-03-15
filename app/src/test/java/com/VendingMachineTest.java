@@ -112,7 +112,7 @@ public class VendingMachineTest
    {
       setupMachine(true);
       
-      for (int i = 0; i < 4; i++)
+      for (int i = 0; i < 10; i++)
       {
          UUT_.insertCoin(Coin.QUARTER);
       }
