@@ -1,7 +1,7 @@
-package com.example.vendingmachine.api;
+package com.vendingmachine.api;
 
-import com.example.vendingmachine.exception.IncorrectCostException;
-import com.example.vendingmachine.exception.ItemNotAvailableException;
+import com.vendingmachine.exception.IncorrectCostException;
+import com.vendingmachine.exception.ItemNotAvailableException;
 
 import java.util.List;
 

@@ -1,11 +1,14 @@
-package com.example.vendingmachine.api;
+package com.vendingmachine.api;
 
-import com.example.vendingmachine.exception.IncorrectCostException;
-import com.example.vendingmachine.exception.InsufficientFundsException;
-import com.example.vendingmachine.exception.ItemNotAvailableException;
-import com.example.vendingmachine.exception.VendingSlotNotFoundException;
+import com.vendingmachine.exception.IncorrectCostException;
+import com.vendingmachine.exception.InsufficientFundsException;
+import com.vendingmachine.exception.ItemNotAvailableException;
+import com.vendingmachine.exception.VendingSlotNotFoundException;
 
 import java.util.List;
+
+// React imports
+import io.reactivex.rxjava3.core.Observable;
 
 /**
  * Describes the functions of a vending machine. The machine can be configured with multiple vending slots
@@ -85,6 +88,5 @@ public interface VendingMachine<ItemType extends Item>
      *
      * @return observable of the coins currently inserted in the machine.
      */
-    // TODO: Implement this using RxJava...
-    //Observable<List<Coin>> observeInsertedMoney();
+    Observable<List<Coin>> observeInsertedMoney();
 }
